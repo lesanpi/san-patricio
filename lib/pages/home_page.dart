@@ -1,63 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:san_patricio/bloc/plant_bloc.dart';
 import 'package:san_patricio/models/PlantProduct.dart';
 import 'package:san_patricio/pages/plant_details_page.dart';
 import 'package:san_patricio/utils/constants.dart';
+import 'package:san_patricio/widgets/circle_button.dart';
 import 'package:san_patricio/widgets/my_app_bar.dart';
 import 'package:san_patricio/widgets/plant_card.dart';
 
-const _initialPage = 3.0;
-
-List<PlantProduct> products = [
-  PlantProduct(
-    name: "Planta",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  ),
-  PlantProduct(
-    name: "Planta 2",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  ),
-  PlantProduct(
-    name: "Planta 3",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  ),
-  PlantProduct(
-    name: "Planta 4",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  ),
-  PlantProduct(
-    name: "Planta 5",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  ),
-  PlantProduct(
-    name: "Planta 6",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  ),
-  PlantProduct(
-    name: "Planta 7",
-    price: 7,
-    image: 'assets/plant.png',
-    description:
-        "Descripcion de la planta, es una planta muy bonita, que requiere mucha agua. Si la quieres, recuerda no ponerla tanto tiempo al sol y mantenerla hidratada. Requiere mucho amor y paciencia.",
-  )
-];
+const _duration = Duration(milliseconds: 100);
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -67,49 +17,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final pageProductController = PageController(
-    viewportFraction: 0.40,
-    initialPage: _initialPage.toInt(),
-  );
-  final currentPage = ValueNotifier<double>(_initialPage);
   @override
   void initState() {
-    currentPage.value = _initialPage;
-    pageProductController.addListener(_productScollListener);
-
+    final bloc = PlantProvider.of(context)!.bloc;
+    bloc.init();
     super.initState();
-  }
-
-  void _productScollListener() {
-    currentPage.value = pageProductController.page ?? currentPage.value;
-  }
-
-  @override
-  void dispose() {
-    pageProductController.removeListener(_productScollListener);
-    pageProductController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    print(size.width);
+    final bloc = PlantProvider.of(context)!.bloc;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(120),
-        child: const MyAppBar(),
+        child: MyAppBar(),
       ),
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
           ValueListenableBuilder<double>(
-            valueListenable: currentPage,
+            valueListenable: bloc.currentPage,
             builder: (context, currentPage, _) {
-              return Container(
+              return SizedBox(
                 width: size.width,
-                // color: Colors.red,
                 height: size.height - 120,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 30, bottom: 50),
@@ -127,55 +60,111 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      Center(
-                        child: Container(
-                          height: size.height - 240,
-                          width: 300 + 400,
-                          child: PageView.builder(
-                            controller: pageProductController,
-                            itemCount: products.length,
-                            itemBuilder: (context, index) {
-                              final plant = products[index];
-                              final result = currentPage - index;
-                              final sizeScale = -0.3 * result.abs() + 1;
-                              // final opacity = sizeScale.clamp(0.0, 1.0);
-                              final color = productColors[
-                                  (index + 1) % productColors.length];
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (BuildContext context,
+                              BoxConstraints constraints) {
+                            return Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: constraints.maxHeight * 0.05),
+                                child: Container(
+                                  height: constraints.maxHeight * 0.95,
+                                  width: constraints.maxWidth,
+                                  child: PageView.builder(
+                                    clipBehavior: Clip.none,
+                                    controller: bloc.pageProductController,
+                                    itemCount: bloc.plants.length,
+                                    itemBuilder: (context, index) {
+                                      final plant = bloc.plants[index];
+                                      final result = currentPage - index;
+                                      final sizeScale = -0.3 * result.abs() + 1;
+                                      // final opacity = sizeScale.clamp(0.0, 1.0);
+                                      final color = productColors[
+                                          (index + 1) % productColors.length];
+                                      final _borderRadius =
+                                          BorderRadius.circular(20);
 
-                              return GestureDetector(
-                                onTap: () {
-                                  print(plant.name);
-                                  Navigator.of(context).push(PageRouteBuilder(
-                                    pageBuilder: (context, animation, _) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: PlantDetailsPage(
-                                          plant: plant,
-                                          color: color,
+                                      return InkWell(
+                                        borderRadius: _borderRadius,
+                                        splashColor: Colors.black12,
+                                        onTap: () {
+                                          bloc.selectItem(index);
+                                          Navigator.of(context)
+                                              .push(PageRouteBuilder(
+                                            pageBuilder:
+                                                (context, animation, _) {
+                                              return FadeTransition(
+                                                opacity: animation,
+                                                child: PlantDetailsPage(
+                                                  plant: plant,
+                                                  color: color,
+                                                ),
+                                              );
+                                            },
+                                          ));
+                                        },
+                                        child: Transform(
+                                          alignment: Alignment.bottomCenter,
+                                          transform: Matrix4.identity()
+                                            ..setEntry(3, 2, 0.001)
+                                            ..translate(
+                                              0.0,
+                                              0.0,
+                                            )
+                                            ..scale(sizeScale),
+                                          child: PlantCard(
+                                            plant: plant,
+                                            color: color,
+                                          ),
                                         ),
                                       );
                                     },
-                                  ));
-                                },
-                                child: Transform(
-                                  alignment: Alignment.bottomCenter,
-                                  transform: Matrix4.identity()
-                                    ..setEntry(3, 2, 0.001)
-                                    ..translate(
-                                      0.0,
-                                      0.0,
-                                    )
-                                    ..scale(sizeScale),
-                                  child: PlantCard(
-                                    plant: plant,
-                                    color: color,
                                   ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleButton(
+                              onTap: bloc.decreaseProductUnit,
+                              text: "-",
+                              size: 60),
+                          const SizedBox(
+                            width: 30,
+                          ),
+                          ValueListenableBuilder(
+                            valueListenable: bloc.unitsHomePage,
+                            builder: (BuildContext context, int value,
+                                Widget? child) {
+                              return AnimatedSwitcher(
+                                duration: _duration,
+                                child: Text(
+                                  value.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 35,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  key: Key(
+                                      bloc.plants[currentPage.round()].name),
                                 ),
                               );
                             },
                           ),
-                        ),
-                      ),
+                          const SizedBox(
+                            width: 30,
+                          ),
+                          CircleButton(
+                            onTap: bloc.increaseProductUnit,
+                            text: "+",
+                            size: 60,
+                          )
+                        ],
+                      )
                     ],
                   ),
                 ),

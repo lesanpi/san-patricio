@@ -9,12 +9,14 @@ class AddToCartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final _borderRadius = BorderRadius.circular(20);
+    return InkWell(
       onTap: onTap,
+      borderRadius: _borderRadius,
       child: Container(
         padding: EdgeInsets.all(size * 0.5),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: _borderRadius,
           color: buttonColor,
         ),
         child: const Center(

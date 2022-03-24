@@ -9,5 +9,15 @@ class PlantProduct {
   final double price;
   final String image;
   final String description;
-  final int units;
+  int units;
+
+  void dicreaseUnits() {
+    if (units > 0) {
+      units--;
+    }
+  }
+
+  void increaseUnits() {
+    units++;
+  }
 }

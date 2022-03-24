@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:san_patricio/bloc/plant_bloc.dart';
 import 'package:san_patricio/pages/home_page.dart';
 import 'package:san_patricio/utils/app_scroll_behavior.dart';
 
@@ -12,14 +13,19 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'San Patricio 💐',
-      scrollBehavior: AppScrollBehavior(),
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    final bloc = PlantBLoC();
+
+    return PlantProvider(
+      bloc: bloc,
+      child: MaterialApp(
+        title: 'San Patricio 💐',
+        scrollBehavior: AppScrollBehavior(),
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const HomePage(),
       ),
-      home: const HomePage(),
     );
   }
 }
